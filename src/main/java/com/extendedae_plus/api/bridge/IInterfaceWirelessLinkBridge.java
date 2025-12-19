@@ -37,14 +37,20 @@ public interface IInterfaceWirelessLinkBridge {
     /**
      * 执行频道链接初始化
      */
-    default void eap$initializeChannelLink() {
-        // 默认实现为空
-    }
-    
+    void eap$initializeChannelLink();
+
     /**
      * 检查并处理延迟初始化
      */
-    default void eap$handleDelayedInit() {
-        // 默认实现为空
-    }
+    void eap$handleDelayedInit();
+
+    /**
+     * 同步虚拟合成状态
+     */
+    void eap$syncVirtualCraftingState();
+
+    /**
+     * 重置频道
+     */
+    void eap$resetChannel();
 }

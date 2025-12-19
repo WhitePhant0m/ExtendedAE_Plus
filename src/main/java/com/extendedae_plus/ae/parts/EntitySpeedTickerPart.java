@@ -13,7 +13,6 @@ import appeng.api.networking.ticking.TickRateModulation;
 import appeng.api.networking.ticking.TickingRequest;
 import appeng.api.parts.IPartCollisionHelper;
 import appeng.api.parts.IPartItem;
-
 import appeng.api.parts.IPartModel;
 import appeng.api.storage.MEStorage;
 import appeng.api.upgrades.IUpgradeInventory;
@@ -39,16 +38,13 @@ import com.extendedae_plus.util.ModCheckUtils;
 import com.extendedae_plus.util.entitySpeed.ConfigParsingUtils;
 import com.extendedae_plus.util.entitySpeed.PowerUtils;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -86,7 +82,7 @@ public class EntitySpeedTickerPart extends UpgradeablePart implements IGridTicka
 
     // 静态块：初始化缓存
     static {
-         if (ModCheckUtils.isAppfluxLoading()) {
+        if (ModCheckUtils.isAppfluxLoading()) {
             try {
                 Class<?> helperClass = Class.forName("com.extendedae_plus.util.entitySpeed.FluxEnergyHelper");
                 Method method = helperClass.getMethod("extractFE", IEnergyService.class, MEStorage.class, long.class, IActionSource.class);
@@ -138,7 +134,7 @@ public class EntitySpeedTickerPart extends UpgradeablePart implements IGridTicka
     public boolean getAccelerateEnabled() {
         return this.getConfigManager().getSetting(Settings.ACCELERATE) == YesNo.YES;
     }
-    
+
     public boolean getRedstoneControlEnabled() {
         return this.getConfigManager().getSetting(Settings.REDSTONE_CONTROL) == YesNo.YES;
     }
@@ -154,7 +150,7 @@ public class EntitySpeedTickerPart extends UpgradeablePart implements IGridTicka
             menu.setAccelerateEnabled(enabled);
         }
     }
-    
+
     public void setRedstoneControlEnabled(boolean enabled) {
         this.getConfigManager().putSetting(Settings.REDSTONE_CONTROL, enabled ? YesNo.YES : YesNo.NO);
         if (menu != null) {
@@ -271,13 +267,13 @@ public class EntitySpeedTickerPart extends UpgradeablePart implements IGridTicka
         if (!getAccelerateEnabled()) {
             return TickRateModulation.IDLE;
         }
-        
+
         // 检查红石控制
         if (getRedstoneControlEnabled() && !getRedstoneState()) {
             // 如果启用了红石控制且没有红石信号，则不执行加速
             return TickRateModulation.IDLE;
         }
-        
+
         updateCachedTarget();
         if (cachedTarget != null && isActive()) {
             ticker(cachedTarget);
@@ -369,6 +365,7 @@ public class EntitySpeedTickerPart extends UpgradeablePart implements IGridTicka
 
     /**
      * 提取网络能量并更新状态，优先从 AE2 网络提取 AE 能量，不足时从磁盘提取 FE 能量。
+     *
      * @param requiredPower 所需能量（AE 单位）
      * @return 是否成功提取足够能量
      */
@@ -414,7 +411,7 @@ public class EntitySpeedTickerPart extends UpgradeablePart implements IGridTicka
                 setNetworkEnergySufficient(true);
                 return true;
             }
-        }catch (Throwable e) {
+        } catch (Throwable e) {
             // 如果反射调用失败，标记为不可用，避免下次继续尝试
             FE_UNAVAILABLE = true;
         }
@@ -449,7 +446,7 @@ public class EntitySpeedTickerPart extends UpgradeablePart implements IGridTicka
                     // 记录警告并停止当前加速循环，避免崩溃
                     Logger.EAP$LOGGER.warn(
                             "检测到方块实体 {} 在位置 {} 的随机数访问冲突，已停止本次加速以避免崩溃。" +
-                            "建议将此方块类型添加到配置黑名单中。",
+                                    "建议将此方块类型添加到配置黑名单中。",
                             blockEntity.getType().toString(),
                             blockEntity.getBlockPos()
                     );
@@ -524,7 +521,7 @@ public class EntitySpeedTickerPart extends UpgradeablePart implements IGridTicka
         updateRedstoneState();
         return redstoneState == YesNo.YES;
     }
-    
+
     // 更新红石信号状态
     private void updateRedstoneState() {
         var be = this.getHost().getBlockEntity();
@@ -672,5 +669,15 @@ public class EntitySpeedTickerPart extends UpgradeablePart implements IGridTicka
     @Override
     public void eap$handleDelayedInit() {
         handleWirelessLogic();
+    }
+
+    @Override
+    public void eap$syncVirtualCraftingState() {
+
+    }
+
+    @Override
+    public void eap$resetChannel() {
+
     }
 }

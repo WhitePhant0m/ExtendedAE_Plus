@@ -5,12 +5,17 @@ import appeng.core.definitions.AEBlocks;
 import appeng.core.definitions.AEItems;
 import appeng.core.definitions.AEParts;
 import appeng.core.localization.GuiText;
+import com.extendedae_plus.util.ModCheckUtils;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.pedroksl.advanced_ae.common.definitions.AAEBlocks;
+import net.pedroksl.advanced_ae.common.definitions.AAEItems;
 
 import static com.glodblock.github.extendedae.common.EPPItemAndBlock.*;
+import static lu.kolja.expandedae.definition.ExpBlocks.EXP_PATTERN_PROVIDER;
+import static lu.kolja.expandedae.definition.ExpItems.EXP_PATTERN_PROVIDER_PART;
 
 /**
- * 
+ *
  */
 public final class UpgradeCards {
     public UpgradeCards(final FMLCommonSetupEvent event) {
@@ -33,18 +38,6 @@ public final class UpgradeCards {
             Upgrades.add(ModItems.VIRTUAL_CRAFTING_CARD.get(), AEBlocks.PATTERN_PROVIDER, 1, patternProviderGroup);
             Upgrades.add(ModItems.VIRTUAL_CRAFTING_CARD.get(), AEParts.PATTERN_PROVIDER, 1, patternProviderGroup);
 
-            // ExtendedAE 的扩展样板供应器（方块与部件）
-            Upgrades.add(ModItems.CHANNEL_CARD.get(),EX_PATTERN_PROVIDER, 1, patternProviderGroup);
-            Upgrades.add(ModItems.CHANNEL_CARD.get(),EX_PATTERN_PROVIDER_PART, 1, patternProviderGroup);
-            Upgrades.add(ModItems.VIRTUAL_CRAFTING_CARD.get(),EX_PATTERN_PROVIDER, 1, patternProviderGroup);
-            Upgrades.add(ModItems.VIRTUAL_CRAFTING_CARD.get(),EX_PATTERN_PROVIDER_PART, 1, patternProviderGroup);
-
-            //EAE 的扩展接口与超大接口（方块与部件）支持频道卡
-            Upgrades.add(ModItems.CHANNEL_CARD.get(), EX_INTERFACE, 1, interfaceGroup);
-            Upgrades.add(ModItems.CHANNEL_CARD.get(), EX_INTERFACE_PART, 1, interfaceGroup);
-            Upgrades.add(ModItems.CHANNEL_CARD.get(), OVERSIZE_INTERFACE, 1, interfaceGroup);
-            Upgrades.add(ModItems.CHANNEL_CARD.get(), OVERSIZE_INTERFACE_PART, 1, interfaceGroup);
-
             //AE2 的输入/输出/存储总线支持频道卡（部件）
             String ioBusGroup = GuiText.IOBuses.getTranslationKey();
             String storageGroup = "group.storage.name";
@@ -52,9 +45,48 @@ public final class UpgradeCards {
             Upgrades.add(ModItems.CHANNEL_CARD.get(), AEParts.EXPORT_BUS, 1, ioBusGroup);
             Upgrades.add(ModItems.CHANNEL_CARD.get(), AEParts.STORAGE_BUS, 1, storageGroup);
 
+            // ExtendedAE 的扩展样板供应器（方块与部件）
+            String exPatternProviderGroup = "gui.expatternprovider.ex_pattern_provider";
+            Upgrades.add(ModItems.CHANNEL_CARD.get(), EX_PATTERN_PROVIDER, 1, exPatternProviderGroup);
+            Upgrades.add(ModItems.CHANNEL_CARD.get(), EX_PATTERN_PROVIDER_PART, 1, exPatternProviderGroup);
+            Upgrades.add(ModItems.VIRTUAL_CRAFTING_CARD.get(), EX_PATTERN_PROVIDER, 1, exPatternProviderGroup);
+            Upgrades.add(ModItems.VIRTUAL_CRAFTING_CARD.get(), EX_PATTERN_PROVIDER_PART, 1, exPatternProviderGroup);
+
+            //EAE 的扩展接口与超大接口（方块与部件）支持频道卡
+            String exInterfaceGroup = "gui.expatternprovider.ex_interface";
+            Upgrades.add(ModItems.CHANNEL_CARD.get(), EX_INTERFACE, 1, exInterfaceGroup);
+            Upgrades.add(ModItems.CHANNEL_CARD.get(), EX_INTERFACE_PART, 1, exInterfaceGroup);
+
+            String oversizeInterfaceGroup = "gui.expatternprovider.oversize_interface";
+            Upgrades.add(ModItems.CHANNEL_CARD.get(), OVERSIZE_INTERFACE, 1, oversizeInterfaceGroup);
+            Upgrades.add(ModItems.CHANNEL_CARD.get(), OVERSIZE_INTERFACE_PART, 1, oversizeInterfaceGroup);
+
             //EAE 的扩展输入/输出总线支持频道卡（部件）
-            Upgrades.add(ModItems.CHANNEL_CARD.get(), EX_IMPORT_BUS, 1, ioBusGroup);
-            Upgrades.add(ModItems.CHANNEL_CARD.get(), EX_EXPORT_BUS, 1, ioBusGroup);
+            String exIoBusGroup = "group.ex_io_bus_part";
+            Upgrades.add(ModItems.CHANNEL_CARD.get(), EX_IMPORT_BUS, 1, exIoBusGroup);
+            Upgrades.add(ModItems.CHANNEL_CARD.get(), EX_EXPORT_BUS, 1, exIoBusGroup);
+
+            //EXPAE
+            if (ModCheckUtils.isLoaded("expandedae")) {
+                String expPatternProviderGroup = "group.exp_pattern_provider.name";
+                Upgrades.add(ModItems.CHANNEL_CARD.get(), EXP_PATTERN_PROVIDER, 1, expPatternProviderGroup);
+                Upgrades.add(ModItems.CHANNEL_CARD.get(), EXP_PATTERN_PROVIDER_PART, 1, expPatternProviderGroup);
+                Upgrades.add(ModItems.VIRTUAL_CRAFTING_CARD.get(), EXP_PATTERN_PROVIDER, 1, expPatternProviderGroup);
+                Upgrades.add(ModItems.VIRTUAL_CRAFTING_CARD.get(), EXP_PATTERN_PROVIDER_PART, 1, expPatternProviderGroup);
+            }
+
+            //AAE
+            if (ModCheckUtils.isLoaded("advanced_ae")) {
+                String advPatternProviderGroup = "group.adv_pattern_provider.name";
+                Upgrades.add(ModItems.CHANNEL_CARD.get(), AAEItems.ADV_PATTERN_PROVIDER, 1, advPatternProviderGroup);
+                Upgrades.add(ModItems.CHANNEL_CARD.get(), AAEBlocks.ADV_PATTERN_PROVIDER, 1, advPatternProviderGroup);
+                Upgrades.add(ModItems.CHANNEL_CARD.get(), AAEItems.SMALL_ADV_PATTERN_PROVIDER, 1, advPatternProviderGroup);
+                Upgrades.add(ModItems.CHANNEL_CARD.get(), AAEBlocks.SMALL_ADV_PATTERN_PROVIDER, 1, advPatternProviderGroup);
+                Upgrades.add(ModItems.VIRTUAL_CRAFTING_CARD.get(), AAEItems.ADV_PATTERN_PROVIDER, 1, advPatternProviderGroup);
+                Upgrades.add(ModItems.VIRTUAL_CRAFTING_CARD.get(), AAEBlocks.ADV_PATTERN_PROVIDER, 1, advPatternProviderGroup);
+                Upgrades.add(ModItems.VIRTUAL_CRAFTING_CARD.get(), AAEItems.SMALL_ADV_PATTERN_PROVIDER, 1, advPatternProviderGroup);
+                Upgrades.add(ModItems.VIRTUAL_CRAFTING_CARD.get(), AAEBlocks.SMALL_ADV_PATTERN_PROVIDER, 1, advPatternProviderGroup);
+            }
         });
     }
 }

@@ -9,7 +9,7 @@ import appeng.core.localization.GuiText;
 import appeng.menu.SlotSemantics;
 import appeng.menu.implementations.PatternProviderMenu;
 import com.extendedae_plus.compat.UpgradeSlotCompat;
-import com.extendedae_plus.util.Logger;
+import com.extendedae_plus.helper.IUpgradeableMenuCompat;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import org.spongepowered.asm.mixin.Mixin;
@@ -31,29 +31,13 @@ public abstract class PatternProviderScreenCompatMixin<C extends PatternProvider
         super(menu, playerInventory, title, style);
     }
 
-    @Inject(method = "<init>", at = @At("TAIL"))
+    @Inject(method = "<init>", at = @At("TAIL"), remap = false)
     private void eap$initCompatUpgrades(PatternProviderMenu menu, Inventory playerInventory, Component title, ScreenStyle style, CallbackInfo ci) {
-        try {
-            // 检测是否应该添加升级面板
-            if (UpgradeSlotCompat.shouldAddUpgradePanelToScreen()) {
-                // 直接添加升级面板，不使用复杂的反射
-                this.eap$addUpgradePanelDirect(menu, style);
-            }
-        } catch (Exception e) {
-            // 静默处理异常，确保不会因为升级功能导致崩溃
-            Logger.EAP$LOGGER.error("PatternProviderScreen兼容性升级面板初始化失败", e);
-        }
-    }
-
-    @Unique
-    private void eap$addUpgradePanelDirect(PatternProviderMenu menu, ScreenStyle style) {
-        try {
-            // 直接添加升级面板
+        if (UpgradeSlotCompat.shouldAddUpgradePanelToScreen()) {
             this.widgets.add("upgrades", new UpgradesPanel(
                     menu.getSlots(SlotSemantics.UPGRADE),
-                    this::eap$getCompatibleUpgrades));
-        } catch (Exception e) {
-            Logger.EAP$LOGGER.error("直接添加升级面板失败", e);
+                    this::eap$getCompatibleUpgrades
+            ));
         }
     }
 
@@ -61,18 +45,7 @@ public abstract class PatternProviderScreenCompatMixin<C extends PatternProvider
     private List<Component> eap$getCompatibleUpgrades() {
         var list = new ArrayList<Component>();
         list.add(GuiText.CompatibleUpgrades.text());
-
-        try {
-            if (menu instanceof UpgradeSlotCompat.IUpgradeableMenuCompat compatMenu) {
-                var upgrades = compatMenu.getCompatUpgrades();
-                if (upgrades != null) {
-                    list.addAll(Upgrades.getTooltipLinesForMachine(upgrades.getUpgradableItem()));
-                }
-            }
-        } catch (Exception e) {
-            Logger.EAP$LOGGER.error("获取兼容升级列表失败", e);
-        }
-
+        list.addAll(Upgrades.getTooltipLinesForMachine(((IUpgradeableMenuCompat) menu).eap$getCompatUpgrades().getUpgradableItem()));
         return list;
     }
 }

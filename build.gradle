@@ -1,6 +1,17 @@
+buildscript {
+    repositories {
+        maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
+    }
+}
+
 plugins {
-    id 'dev.architectury.loom' version '1.10-SNAPSHOT'
     id 'maven-publish'
+    id 'idea'
+    id 'net.neoforged.moddev.legacyforge' version '2.0.91'
     id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
@@ -8,33 +19,50 @@ group = project.maven_group
 version = project.mod_version
 
 base {
-    archivesName = project.archives_name
+    archivesName = project.mod_id
 }
 
-sourceSets {
-    main {
-        resources {
-            srcDir 'src/generated/resources'
-        }
-    }
-}
-
-loom {
-    silentMojangMappingsLicense()
-
-    forge {
-        mixinConfig 'extendedae_plus.mixins.json'
-    }
+legacyForge {
+    version = project.minecraft_version + '-' + project.forge_version
 
     runs {
+        configureEach {
+            gameDirectory = project.file('run')
+            logLevel = org.slf4j.event.Level.DEBUG
+        }
+
+        client {
+            client()
+            sourceSet = sourceSets.main
+        }
+
+        server {
+            server()
+            sourceSet = sourceSets.main
+        }
+
         data {
             data()
-            name "Data Generation"
             // IDE 启动时传入参数
-            programArgs.addAll(
+            programArguments.addAll(
                     '--mod', project.name, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
             )
         }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet(sourceSets.main)
+        }
+    }
+}
+
+sourceSets.main.resources {
+    srcDir 'src/generated/resources'
+}
+sourceSets {
+    main {
+        ext.refMap = "mixins.${mod_id}.refmap.json"
     }
 }
 
@@ -70,18 +98,14 @@ repositories {
     }
     maven { url "https://repo.spongepowered.org/maven" }
     maven { url "https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/" }
+    maven { url "https://maven.bawnorton.com/releases" }
 }
 
 dependencies {
-    minecraft "net.minecraft:minecraft:${minecraft_version}"
-    mappings loom.officialMojangMappings()
-    forge "net.minecraftforge:forge:${forge_version}"
-    annotationProcessor "org.spongepowered:mixin:${mixin_version}:processor"
-
     //exendedae前置
     modImplementation "curse.maven:glodium-957920:${glodium_version}"
     //extendedAE
-    modImplementation "curse.maven:ex-pattern-provider-892005:7005572"
+    modImplementation "curse.maven:ex-pattern-provider-892005:7248944"
 
     //ae2
     modImplementation "appeng:appliedenergistics2-forge:${ae2_version}"
@@ -95,8 +119,13 @@ dependencies {
     modCompileOnly "curse.maven:modern-ae2-additions-1028068:6827727"
 
     //aea
-    modCompileOnly "curse.maven:advancedae-1084104:6939473"
-    modRuntimeOnly "curse.maven:advancedae-1084104:6939473"
+    modCompileOnly "curse.maven:advancedae-1084104:7159779"
+    modRuntimeOnly "curse.maven:advancedae-1084104:7159779"
+
+    //expae
+    modCompileOnly "curse.maven:ae2addonlib-1366135:7159767"
+    modCompileOnly "curse.maven:expanded-ae-1213351:7266780"
+    modRuntimeOnly "curse.maven:expanded-ae-1213351:7266780"
 
     modCompileOnly "mezz.jei:jei-${minecraft_version}-forge:${jei_version}"
     modRuntimeOnly "mezz.jei:jei-${minecraft_version}-forge:15.20.0.112"
@@ -120,10 +149,10 @@ dependencies {
     //geckolib
     modRuntimeOnly "curse.maven:geckolib-388172:6920925"
     //mclib运行时
-    forgeRuntimeLibrary "com.eliotlash.mclib:mclib:20"
+    modRuntimeOnly "com.eliotlash.mclib:mclib:20"
 
     // compileOnly 供代码编译
-    include "curse.maven:configuration-444699:4710266"
+    implementation(jarJar("curse.maven:configuration-444699:4710266"))
     modImplementation "curse.maven:configuration-444699:4710266"
 
     //ftbteams
@@ -131,39 +160,85 @@ dependencies {
     modCompileOnly "curse.maven:ftb-library-forge-404465:6807424"
     modRuntimeOnly "curse.maven:ftb-teams-forge-404468:6130786"
     modRuntimeOnly "curse.maven:ftb-library-forge-404465:6807424"
+
+    compileOnly "org.jetbrains:annotations:26.0.2-1"
+    annotationProcessor "org.spongepowered:mixin:${mixin_version}:processor"
+    compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:0.4.1"))
+    implementation(jarJar("io.github.llamalad7:mixinextras-forge:0.4.1"))
+    compileOnly(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-common:0.3.6-beta.1"))
+    implementation(jarJar("com.github.bawnorton.mixinsquared:mixinsquared-forge:0.3.6-beta.1"))
 }
 
 compileJava {
     options.compilerArgs += ['-Xlint:-deprecation', '-Xlint:-removal', '-Xlint:-unchecked']
 }
 
-processResources {
-    inputs.property 'version', project.version
+tasks.named('processResources', ProcessResources).configure {
+    var replaceProperties = [minecraft_version      : minecraft_version,
+                             minecraft_version_range: minecraft_version_range,
+                             forge_version          : forge_version,
+                             forge_version_range    : forge_version_range,
+                             loader_version_range   : loader_version_range,
+                             mod_id                 : mod_id,
+                             mod_name               : mod_name,
+                             mod_license            : mod_license,
+                             mod_version            : mod_version,
+                             mod_authors            : mod_authors,
+                             mod_description        : mod_description,
+    ]
+
+    inputs.properties replaceProperties
 
     filesMatching('META-INF/mods.toml') {
-        expand version: project.version
+        expand replaceProperties + [project: project]
     }
-}
-
-java {
-    // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-    // if it is present.
-    // If you remove this line, sources will not be generated.
-    withSourcesJar()
-
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
 }
 
 // 将 LICENSE 打包进发布的 jar
 tasks.named('jar', Jar).configure {
+    manifest {
+        attributes([
+                "Specification-Title"   : project.mod_id,
+                "Specification-Vendor"  : project.mod_authors,
+                "Specification-Version" : "1",
+                "Implementation-Title"  : project.mod_name,
+                "Implementation-Version": project.mod_version,
+                "Implementation-Vendor" : project.mod_authors,
+                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+        ])
+    }
+
     from('.') {
         include 'LICENSE'
     }
+
+    finalizedBy 'reobfJar'
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(17)
+    withSourcesJar()
 }
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.release = 17
+    options.encoding = 'UTF-8'
+    options.release = 17
+}
+tasks.withType(Jar).configureEach {
+    destinationDirectory.set(file("$rootDir/jar"))
+}
+
+mixin {
+    add sourceSets.main, 'mixins.extendedae_plus.refmap.json'
+    config 'extendedae_plus.mixins.json'
+}
+
+jar {
+    manifest {
+        attributes([
+                'MixinConfigs': 'extendedae_plus.mixins.json'
+        ])
+    }
 }
 
 // Configure Maven publishing.

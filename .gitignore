@@ -4,6 +4,7 @@ build/
 out/
 classes/
 source/
+libs/
 
 # Eclipse
 *.tmp
