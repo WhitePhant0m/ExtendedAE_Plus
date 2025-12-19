@@ -19,26 +19,30 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(InterfaceLogic.class)
 public abstract class InterfaceLogicChannelCardMixin implements IInterfaceWirelessLinkBridge {
 
-    @Shadow(remap = false) public abstract IUpgradeInventory getUpgrades();
+    @Shadow(remap = false)
+    public abstract IUpgradeInventory getUpgrades();
 
-    @Shadow(remap = false) public abstract appeng.api.networking.IGridNode getActionableNode();
+    @Shadow(remap = false)
+    public abstract appeng.api.networking.IGridNode getActionableNode();
 
-    @Shadow(remap = false) protected InterfaceLogicHost host;
-    
-    @Shadow(remap = false) protected appeng.api.networking.IManagedGridNode mainNode;
+    @Shadow(remap = false)
+    protected InterfaceLogicHost host;
+
+    @Shadow(remap = false)
+    protected appeng.api.networking.IManagedGridNode mainNode;
 
     @Unique
     private WirelessSlaveLink eap$link;
-    
+
     @Unique
     private long eap$lastChannel = -1;
-    
+
     @Unique
     private boolean eap$clientConnected = false;
-    
+
     @Unique
     private boolean eap$hasInitialized = false;
-    
+
     @Unique
     private int eap$delayedInitTicks = 0;
 
@@ -96,7 +100,7 @@ public abstract class InterfaceLogicChannelCardMixin implements IInterfaceWirele
         }
 
         // 优先等待网格完成引导（比仅检查 isActive 更可靠）
-        if (!mainNode.hasGridBooted()) {
+        if (!mainNode.isReady()) {
             return;
         }
 
@@ -132,7 +136,7 @@ public abstract class InterfaceLogicChannelCardMixin implements IInterfaceWirele
             eap$link.setPlacerId(ownerUUID);
             eap$link.setFrequency(channel);
             eap$link.updateStatus();
-            
+
             if (eap$link.isConnected()) {
                 eap$hasInitialized = true; // 设置初始化完成标志
             } else {
@@ -160,7 +164,7 @@ public abstract class InterfaceLogicChannelCardMixin implements IInterfaceWirele
             eap$link.updateStatus();
         }
     }
-    
+
     @Override
     public boolean eap$isWirelessConnected() {
         // InterfaceLogic没有isClientSide方法，需要通过host判断
@@ -170,22 +174,22 @@ public abstract class InterfaceLogicChannelCardMixin implements IInterfaceWirele
             return eap$link != null && eap$link.isConnected();
         }
     }
-    
+
     @Override
     public void eap$setClientWirelessState(boolean connected) {
         eap$clientConnected = connected;
     }
-    
+
     @Override
     public boolean eap$hasTickInitialized() {
         return eap$hasInitialized;
     }
-    
+
     @Override
     public void eap$setTickInitialized(boolean initialized) {
         eap$hasInitialized = initialized;
     }
-    
+
     @Override
     public void eap$handleDelayedInit() {
         // 仅在服务端执行延迟初始化，避免在渲染线程/客户端触发任何初始化路径
@@ -195,7 +199,7 @@ public abstract class InterfaceLogicChannelCardMixin implements IInterfaceWirele
 
         // 若尚未初始化，则持续尝试，直到网格完成引导
         if (!eap$hasInitialized) {
-            if (!mainNode.hasGridBooted()) {
+            if (!mainNode.isReady()) {
                 // 仍在引导，消耗计时器
                 if (eap$delayedInitTicks > 0) {
                     eap$delayedInitTicks--;
@@ -219,6 +223,6 @@ public abstract class InterfaceLogicChannelCardMixin implements IInterfaceWirele
             }
         }
     }
-    
+
     // eap$initializeChannelLink方法已在上面实现
 }

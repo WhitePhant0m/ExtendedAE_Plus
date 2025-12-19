@@ -1,8 +1,8 @@
 package com.extendedae_plus.mixin.advancedae.compat;
 
+import appeng.api.crafting.IPatternDetails;
 import appeng.api.networking.crafting.ICraftingCPU;
 import appeng.api.networking.crafting.ICraftingService;
-import appeng.api.crafting.IPatternDetails;
 import appeng.api.stacks.KeyCounter;
 import appeng.helpers.patternprovider.PatternProviderLogic;
 import com.extendedae_plus.compat.PatternProviderLogicVirtualCompatBridge;

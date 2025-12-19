@@ -1,15 +1,15 @@
-package com.extendedae_plus.mixin.ae2.compat;
+package com.extendedae_plus.mixin.advancedae.compat;
 
 import appeng.api.crafting.IPatternDetails;
 import appeng.api.networking.IGrid;
 import appeng.api.networking.IManagedGridNode;
 import appeng.api.stacks.KeyCounter;
 import appeng.api.upgrades.IUpgradeableObject;
-import appeng.helpers.patternprovider.PatternProviderLogic;
-import appeng.helpers.patternprovider.PatternProviderLogicHost;
 import com.extendedae_plus.api.bridge.IInterfaceWirelessLinkBridge;
 import com.extendedae_plus.compat.PatternProviderLogicVirtualCompatBridge;
 import com.extendedae_plus.helper.WirelessLogicHelper;
+import net.pedroksl.advanced_ae.common.logic.AdvPatternProviderLogic;
+import net.pedroksl.advanced_ae.common.logic.AdvPatternProviderLogicHost;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -19,20 +19,15 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/**
- * PatternProviderLogic的兼容性Mixin
- * 优先级设置为1500，在appflux之后应用
- * 根据appflux是否存在来决定是否实现IUpgradeableObject接口
- */
-@Mixin(value = PatternProviderLogic.class, priority = 500, remap = false)
-public abstract class PatternProviderLogicCompatMixin implements IUpgradeableObject, IInterfaceWirelessLinkBridge, PatternProviderLogicVirtualCompatBridge {
+@Mixin(value = AdvPatternProviderLogic.class, priority = 500, remap = false)
+public abstract class AdvPatternProviderLogicMixin implements IUpgradeableObject, IInterfaceWirelessLinkBridge, PatternProviderLogicVirtualCompatBridge {
 
     @Unique
     private WirelessLogicHelper eap$wirelessHelper;
 
     @Final
     @Shadow
-    private PatternProviderLogicHost host;
+    private AdvPatternProviderLogicHost host;
 
     @Final
     @Shadow
@@ -41,8 +36,8 @@ public abstract class PatternProviderLogicCompatMixin implements IUpgradeableObj
     @Shadow
     public abstract IGrid getGrid();
 
-    @Inject(method = "<init>(Lappeng/api/networking/IManagedGridNode;Lappeng/helpers/patternprovider/PatternProviderLogicHost;I)V", at = @At("TAIL"))
-    private void eap$initWirelessHelper(IManagedGridNode mainNode, PatternProviderLogicHost host, int patternInventorySize, CallbackInfo ci) {
+    @Inject(method = "<init>(Lappeng/api/networking/IManagedGridNode;Lnet/pedroksl/advanced_ae/common/logic/AdvPatternProviderLogicHost;I)V", at = @At("TAIL"))
+    private void eap$initWirelessHelper(IManagedGridNode mainNode, AdvPatternProviderLogicHost host, int patternInventorySize, CallbackInfo ci) {
         eap$wirelessHelper = new WirelessLogicHelper(host::getBlockEntity, mainNode, this::getGrid, this::getUpgrades);
     }
 

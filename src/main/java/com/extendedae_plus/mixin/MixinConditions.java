@@ -20,11 +20,13 @@ public class MixinConditions implements IMixinConfigPlugin {
     private static final Object2ObjectMap<String, List<String>> loadIfPresent = new Object2ObjectOpenHashMap<>(
             new String[]{
                     "com.extendedae_plus.mixin.advancedae",
-                    "com.extendedae_plus.mixin.appflux.UpgradeSlotMixin"
+                    "com.extendedae_plus.mixin.appflux.UpgradeSlotMixin",
+                    "com.extendedae_plus.mixin.appflux.AdvUpgradeSlotMixin"
             },
             new List[]{
                     List.of("advanced_ae"),
-                    List.of("appflux")
+                    List.of("appflux"),
+                    List.of("appflux", "advanced_ae")
             }
     );
     private static final Object2ObjectMap<String, List<String>> loadIfNotPresent = new Object2ObjectOpenHashMap<>(
@@ -33,14 +35,22 @@ public class MixinConditions implements IMixinConfigPlugin {
                     "com.extendedae_plus.mixin.ae2.client.gui.CraftConfirmScreenMixin",
                     "com.extendedae_plus.mixin.ae2.compat.PatternProviderLogicHostCompatMixin",
                     "com.extendedae_plus.mixin.ae2.compat.PatternProviderCompatMixin",
-                    "com.extendedae_plus.mixin.ae2.compat.PatternProviderScreenCompatMixin"
+                    "com.extendedae_plus.mixin.ae2.compat.PatternProviderScreenCompatMixin",
+                    "com.extendedae_plus.mixin.advancedae.compat.AdvAddUpgradeSlotMixin",
+                    "com.extendedae_plus.mixin.advancedae.compat.AdvPatternProviderLogicHostMixin",
+                    "com.extendedae_plus.mixin.advancedae.compat.AdvPatternProviderMenuMixin",
+                    "com.extendedae_plus.mixin.advancedae.compat.AdvPatternProviderScreenMixin"
             },
             new List[]{
                     List.of("mae2"),
                     List.of("expandedae"),
                     List.of("expandedae", "appflux", "pccard"),
                     List.of("expandedae", "appflux", "pccard"),
-                    List.of("expandedae", "appflux", "pccard")
+                    List.of("expandedae", "appflux", "pccard"),
+                    List.of("appflux"),
+                    List.of("appflux"),
+                    List.of("appflux"),
+                    List.of("appflux")
             }
     );
 
@@ -65,24 +75,32 @@ public class MixinConditions implements IMixinConfigPlugin {
 
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
+        boolean apply = true;
+
         for (var entry : loadIfPresent.entrySet()) {
             if (mixinClassName.startsWith(entry.getKey())) {
-                return entry.getValue().stream().anyMatch(this::isModLoaded);
+                apply = entry.getValue().stream().anyMatch(this::isModLoaded);
+                break;
             }
         }
 
-        for (var entry : loadIfNotPresent.entrySet()) {
-            if (mixinClassName.startsWith(entry.getKey())) {
-                return entry.getValue().stream().noneMatch(this::isModLoaded);
+        if (apply) {
+            for (var entry : loadIfNotPresent.entrySet()) {
+                if (mixinClassName.startsWith(entry.getKey())) {
+                    apply = entry.getValue().stream().noneMatch(this::isModLoaded);
+                    break;
+                }
             }
         }
 
-        // === GuideME 版本兼容 ===
-        if (mixinClassName.startsWith("com.extendedae_plus.mixin.guideme.")) {
-            return ModCheckUtils.isLoadedAndLowerThan(ModCheckUtils.MODID_GUIDEME, "20.1.14");
+        if (apply) {
+            // === GuideME 版本兼容 ===
+            if (mixinClassName.startsWith("com.extendedae_plus.mixin.guideme.")) {
+                return ModCheckUtils.isLoadedAndLowerThan(ModCheckUtils.MODID_GUIDEME, "20.1.14");
+            }
         }
 
-        return true;
+        return apply;
     }
 
     @Override

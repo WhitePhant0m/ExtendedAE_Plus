@@ -1,15 +1,15 @@
-package com.extendedae_plus.mixin.ae2.compat;
+package com.extendedae_plus.mixin.advancedae.compat;
 
 import appeng.api.networking.IManagedGridNode;
 import appeng.api.upgrades.IUpgradeInventory;
 import appeng.api.upgrades.IUpgradeableObject;
 import appeng.api.upgrades.UpgradeInventories;
-import appeng.helpers.patternprovider.PatternProviderLogic;
-import appeng.helpers.patternprovider.PatternProviderLogicHost;
 import com.extendedae_plus.api.bridge.IInterfaceWirelessLinkBridge;
 import com.extendedae_plus.compat.UpgradeSlotCompat;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
+import net.pedroksl.advanced_ae.common.logic.AdvPatternProviderLogic;
+import net.pedroksl.advanced_ae.common.logic.AdvPatternProviderLogicHost;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -20,18 +20,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
 
-@Mixin(value = PatternProviderLogic.class, remap = false, priority = 2000)
-public abstract class AddUpgradeSlotMixin implements IUpgradeableObject {
+@Mixin(value = AdvPatternProviderLogic.class, priority = 2000, remap = false)
+public class AdvAddUpgradeSlotMixin implements IUpgradeableObject {
+    @Shadow
+    @Final
+    private AdvPatternProviderLogicHost host;
+
     @Unique
     private IUpgradeInventory eap$compatUpgrades;
 
-    @Final
-    @Shadow
-    private PatternProviderLogicHost host;
-
-    @Inject(method = "<init>(Lappeng/api/networking/IManagedGridNode;Lappeng/helpers/patternprovider/PatternProviderLogicHost;I)V",
+    @Inject(method = "<init>(Lappeng/api/networking/IManagedGridNode;Lnet/pedroksl/advanced_ae/common/logic/AdvPatternProviderLogicHost;I)V",
             at = @At("TAIL"))
-    private void eap$compatInitUpgrades(IManagedGridNode mainNode, PatternProviderLogicHost host, int patternInventorySize, CallbackInfo ci) {
+    private void eap$compatInitUpgrades(IManagedGridNode mainNode, AdvPatternProviderLogicHost host, int patternInventorySize, CallbackInfo ci) {
         if (UpgradeSlotCompat.shouldEnableUpgradeSlots())
             eap$compatUpgrades = UpgradeInventories.forMachine(host.getTerminalIcon().getItem(), 2, this::eap$compatOnUpgradesChanged);
     }
